@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stuff</title>
+  </head>
+  <body style='background:black;color:white'>
+    <ul>
+      <li>CANcube: <span id='cancube'>Loading page number ...</span></li>
+      <li>Cubing Out Loud: <span id='cubingoutloud'>Loading page number ...</span></li>
+      <li>Speedcubes Canada: <span id='speedcubescanada'>Loading page number ...</span></li>
+      <li></li>
+      <li>CubeZZ: <span id='cubezz'>Loading page number ...</span></li>
+    </ul>
+    <table id='data'></table>
+    <div>
+      Techniques de comparaison
+      <ul>
+        <li>Tous les puzzles d'un store sont differents</li>
+      </ul>
+    </div>
+    <script>
+      var pageCounter = {};
+      var puzzleList = {};
+      updatePuzzleList = () => {/*
+        document.getElementById('data').innerHTML = "<tr><th>Name</th><th>Price</th><th>Currency</th><th>Store</th></tr>";
+        for (var puzzle of puzzleList) {
+          var tr = document.createElement('tr');
+          for (var cat in puzzle) {
+            td = document.createElement('td');
+            td.innerHTML = puzzle[cat];
+            tr.appendChild(td);
+          }
+          document.getElementById('data').appendChild(tr);
+        }*/
+      }
+      updatePage = (curReq, storeId, totalPage) => {
+        if (curReq.readyState == 4 && curReq.status == 200) {
+          if (totalPage == 0) {
+            var totalPage = +curReq.responseText;
+            pageCounter[storeId] = 0;
+            for (var page = 0; page < totalPage; ++page)
+              sendReq(storeId, page+1, totalPage);
+          }
+          else {
+            var pagePuzzles = curReq.responseText;
+            if (pagePuzzles == 'lol')
+              console.log(storeId);
+            else {
+              newPuzzles = JSON.parse(curReq.responseText);
+              var brands = ['cong\'s', 'cyclone', 'dayan', 'diansheng', 'fangshi', 'fanxin', 'gan', 'gans', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'maru', 'mf8', 'mofang', 'mohuan', 'moyu', 'mozhi', 'ninja', 'qiyi', 'qj', 'rubik\'s', 'shengshou', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yuxin', 'yj', 'z', 'z-cube'];
+              var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1']
+              for (newPuzzle of newPuzzles) {
+                var newPuzzleWords = newPuzzle.name.toLowerCase().split(' ')
+                var brand = newPuzzleWords.find(w => brands.indexOf(w) != -1);
+                newPuzzleWords = newPuzzleWords.filter(v => v !== brand);
+                if (brand == 'gans')
+                  brand = 'gan';
+                if (brand == 'z')
+                  brand = 'z-cube';
+                if (brand == 'verrypuzzle')
+                  brand = 'verypuzzle';
+                if (!brand && storeId == 'cubezz') {
+                  brand = 'other';
+                  console.log(newPuzzleWords, newPuzzle);
+                }
+                if (!(brand in puzzleList))
+                  puzzleList[brand] = {};
+                var size = newPuzzleWords.find(w => sizes.indexOf(w) != -1);
+                if (!size)
+                  ;//console.log(newPuzzleWords, newPuzzle);
+                if (!size)
+                  size = 'other';
+                if (size == '3x3')
+                  size = '3x3x3'
+                if (!(size in puzzleList[brand]))
+                  puzzleList[brand][size] = [];
+                puzzleList[brand][size].push(newPuzzle);
+              }
+              console.log(puzzleList)
+//              puzzleList.push(...pagePuzzles);
+//              updatePuzzleList();
+            }
+            pageCounter[storeId] += 1;
+          }
+          document.getElementById(storeId).innerHTML = 'page '+pageCounter[storeId]+' sur ' + totalPage;
+        }
+      }
+      sendReq = (storeId, page = 0, totalPage = 0) => {
+        var url = "fetch.php?site="+storeId;
+        if (page != 0)
+          url += "&page="+page;
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {updatePage(this, storeId, totalPage)};
+        req.open("GET", url, true);
+        req.send();
+      }
+      sendReq('cancube');
+      sendReq('cubingoutloud');
+      sendReq('speedcubescanada');
+      sendReq('cubezz');
+    </script>
+  </body>
+</html>
+
