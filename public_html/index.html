@@ -47,21 +47,30 @@
               console.log(storeId);
             else {
               newPuzzles = JSON.parse(curReq.responseText);
-              var brands = ['cong\'s', 'cyclone', 'dayan', 'diansheng', 'fangshi', 'fanxin', 'gan', 'gans', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'maru', 'mf8', 'mofang', 'mohuan', 'moyu', 'mozhi', 'ninja', 'qiyi', 'qj', 'rubik\'s', 'shengshou', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yuxin', 'yj', 'z', 'z-cube'];
+              var brands = ['cong\'s', 'congs', 'cube4you', 'cubetwist', 'cyclone', 'dayan', 'diansheng', 'fangcun', 'fangshi', 'fanxin', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
               var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1']
               for (newPuzzle of newPuzzles) {
                 var newPuzzleWords = newPuzzle.name.toLowerCase().split(' ')
                 var brand = newPuzzleWords.find(w => brands.indexOf(w) != -1);
                 newPuzzleWords = newPuzzleWords.filter(v => v !== brand);
-                if (brand == 'gans')
-                  brand = 'gan';
-                if (brand == 'z')
+                if (brand == 'gan' || brand == 'gans')
+                  brand = 'ganspuzzle';
+                if (brand == 'z' || brand == 'zcube')
                   brand = 'z-cube';
                 if (brand == 'verrypuzzle')
                   brand = 'verypuzzle';
-                if (!brand && storeId == 'cubezz') {
-                  brand = 'other';
-                  console.log(newPuzzleWords, newPuzzle);
+                if (brand == 'yj')
+                  brand = 'yongjun';
+                if (brand == 'rubik')
+                  brand = 'rubik\'s';
+                if (brand == 'congs')
+                  brand = 'cong\'s';
+                if (brand == 'mofangge')
+                  brand = 'qiyi';
+                if (!brand) {
+                  brand = '_other';
+                  if (newPuzzle.currency == 'USD')
+                    console.log(newPuzzleWords, newPuzzle);
                 }
                 if (!(brand in puzzleList))
                   puzzleList[brand] = {};
@@ -69,7 +78,7 @@
                 if (!size)
                   ;//console.log(newPuzzleWords, newPuzzle);
                 if (!size)
-                  size = 'other';
+                  size = '_other';
                 if (size == '3x3')
                   size = '3x3x3'
                 if (!(size in puzzleList[brand]))
@@ -101,4 +110,3 @@
     </script>
   </body>
 </html>
-
