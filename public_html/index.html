@@ -54,7 +54,7 @@
               console.log(storeId);
             else {
               newPuzzles = JSON.parse(curReq.responseText);
-              var brands = ['calvin\'s', 'cong\'s', 'congs', 'cube4you', 'cubetwist', 'crazybad', 'cyclone', 'dayan', 'diansheng', 'eastsheen', 'evgeniy', 'fangcun', 'fangshi', 'fangshi(funs)', 'fanxin', 'fisher', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'meffert\'s', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'pitcher', 'pochmann\'s', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'timur', 'tomz', 'traiphum', 'type', 'type_c', 'v-cube', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
+              var brands = ['calvin\'s', 'cong\'s', 'congs', 'cube4you', 'cubetwist', 'crazybad', 'cyclone', 'cycloneboys', 'dayan', 'diansheng', 'eastsheen', 'evgeniy', 'fangcun', 'fangshi', 'fangshi(funs)', 'fanxin', 'fisher', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'meffert\'s', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'pitcher', 'pochmann\'s', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'timur', 'tomz', 'traiphum', 'type', 'type_c', 'v-cube', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
 
               var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1'];
               for (newPuzzle of newPuzzles) {
@@ -79,6 +79,8 @@
                   brand = 'fangshi';
                 if (brand == 'type')
                   brand = 'type_c';
+		if (brand == 'cyclone')
+		  brand = 'cycloneboys';
                 if (!brand) {
                   brand = '_other';
                   if (newPuzzle.store == 'championscubestoree')
