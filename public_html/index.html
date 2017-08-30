@@ -4,12 +4,18 @@
     <title>Stuff via ftp test2</title>
   </head>
   <body style='background:black;color:white'>
+    Asia
+    <ul>
+      <li>HK Now Store: <span id='hknowstore'>Loading page number ...</span></li>
+      <li>Champions Cube Store: <span id='championscubestore'>Loading page number ...</span></li>
+      <li>CubeZZ: <span id='cubezz'>Loading page number ...</span></li>
+      <li>Cube 4 You: <span id='cube4you'>Loading page number ...</span></li>
+    </ul>
+    Canada
     <ul>
       <li>CANcube: <span id='cancube'>Loading page number ...</span></li>
       <li>Cubing Out Loud: <span id='cubingoutloud'>Loading page number ...</span></li>
       <li>Speedcubes Canada: <span id='speedcubescanada'>Loading page number ...</span></li>
-      <li></li>
-      <li>CubeZZ: <span id='cubezz'>Loading page number ...</span></li>
     </ul>
     <table id='data'></table>
     <div>
@@ -47,8 +53,9 @@
               console.log(storeId);
             else {
               newPuzzles = JSON.parse(curReq.responseText);
-              var brands = ['cong\'s', 'congs', 'cube4you', 'cubetwist', 'cyclone', 'dayan', 'diansheng', 'fangcun', 'fangshi', 'fanxin', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
-              var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1']
+              var brands = ['calvin\'s', 'cong\'s', 'congs', 'cube4you', 'cubetwist', 'crazybad', 'cyclone', 'dayan', 'diansheng', 'eastsheen', 'evgeniy', 'fangcun', 'fangshi', 'fangshi(funs)', 'fanxin', 'fisher', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'meffert\'s', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'pitcher', 'pochmann\'s', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'timur', 'tomz', 'traiphum', 'type', 'type_c', 'v-cube', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
+
+              var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1'];
               for (newPuzzle of newPuzzles) {
                 var newPuzzleWords = newPuzzle.name.toLowerCase().split(' ')
                 var brand = newPuzzleWords.find(w => brands.indexOf(w) != -1);
@@ -67,9 +74,13 @@
                   brand = 'cong\'s';
                 if (brand == 'mofangge')
                   brand = 'qiyi';
+                if (brand == 'fangshi(funs)')
+                  brand = 'fangshi';
+                if (brand == 'type')
+                  brand = 'type_c';
                 if (!brand) {
                   brand = '_other';
-                  if (newPuzzle.currency == 'USD')
+                  if (newPuzzle.store == 'championscubestoree')
                     console.log(newPuzzleWords, newPuzzle);
                 }
                 if (!(brand in puzzleList))
@@ -85,8 +96,7 @@
                   puzzleList[brand][size] = [];
                 puzzleList[brand][size].push(newPuzzle);
               }
-              console.log(puzzleList)
-//              puzzleList.push(...pagePuzzles);
+//              console.log(puzzleList)
 //              updatePuzzleList();
             }
             pageCounter[storeId] += 1;
@@ -103,10 +113,13 @@
         req.open("GET", url, true);
         req.send();
       }
-      sendReq('cancube');
-      sendReq('cubingoutloud');
-      sendReq('speedcubescanada');
-      sendReq('cubezz');
+//      sendReq('hknowstore');
+      sendReq('championscubestore');
+//      sendReq('cubezz');
+      sendReq('cube4you');
+//      sendReq('cancube');
+//      sendReq('cubingoutloud');
+//      sendReq('speedcubescanada');
     </script>
   </body>
 </html>
