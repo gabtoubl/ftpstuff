@@ -210,7 +210,6 @@ function zcube($dom, $page = 0) {
     $puzzles = [];
     $content = $dom->getElementById('content');
     $products = $xpath->query(".//*[contains(@class, 'col-sm-4')]", $content);
-    print_r($products);
     foreach ($products as $product) {
       $productName = $product->getElementsByTagName('h4')[0]->nodeValue;
       $productPrice = $xpath->query(".//*[contains(@class, 'price-new')]", $product)[0]->nodeValue;
