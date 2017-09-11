@@ -1,7 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Stuff via ftp test2</title>
+    <title>Cube buyer</title>
+    <style>
+      span {
+        cursor: pointer;
+      }
+      .selected {
+        color: black;
+        font-weight: bold;
+        background: white;
+      }
+    </style>
   </head>
   <body style='background:black;color:white'>
     Asia
@@ -18,27 +28,123 @@
       <li>Cubing Out Loud: <span id='cubingoutloud'>Loading page number ...</span></li>
       <li>Speedcubes Canada: <span id='speedcubescanada'>Loading page number ...</span></li>
     </ul>
-    <table id='data'></table>
-    <div>
-      Techniques de comparaison
-      <ul>
-        <li>Tous les puzzles d'un store sont differents</li>
-      </ul>
+    <input type="text" id="newDirName" value="" />
+    <button type="button" onclick='createDir()'>Create New Directory</button>
+    <div id='treeView'>
+      <div id='currentPuzzleName'></div>
+      <div id='ariane'>/</div>
+      <div id='tree'></div>
     </div>
-    <script>
+    <table id='data'></table>
+    <script type="text/javascript" src="db.js"></script>
+    <script type="text/javascript">
       var pageCounter = {};
-      var puzzleList = {};
-      updatePuzzleList = () => {/*
-        document.getElementById('data').innerHTML = "<tr><th>Name</th><th>Price</th><th>Currency</th><th>Store</th></tr>";
-        for (var puzzle of puzzleList) {
-          var tr = document.createElement('tr');
-          for (var cat in puzzle) {
-            td = document.createElement('td');
-            td.innerHTML = puzzle[cat];
-            tr.appendChild(td);
+      var currentTree = jsonTree;
+      var currentPath = '/';
+      var selectedPath = '/';
+      var selectedElement = false;
+      var data = document.getElementById('data');
+      var ariane = document.getElementById('ariane');
+      var tree = document.getElementById('tree');
+      createDir = () => {
+        var newDir = document.getElementById('newDirName').value.toLowerCase().replace(/[^a-z0-9]/gi, '');;
+        if (newDir == 'unclassified' || newDir == '')
+          return;
+        currentTree[newDir] = {'unclassified': {}}
+        changeCurrentTree(currentPath);
+      }
+      changeCurrentTree = (path = '/', element = false) => {
+        if (path != currentPath && selectedPath != path) {
+          selectedPath = path;
+          if (element) {
+            if (selectedElement)
+              selectedElement.className = '';
+            selectedElement = element;
+            selectedElement.className = 'selected';
           }
-          document.getElementById('data').appendChild(tr);
-        }*/
+          console.log(path, selectedElement);
+          return;
+        }
+        currentPath = path;
+        var root = jsonTree;
+        for (elem of path.split('/').slice(1)) {
+          if (elem == "") {
+            currentTree = root;
+            updateArianePath();
+            updatePuzzleList();
+          }
+          else
+            root = root[elem];
+        }
+      }
+      updateArianePath = () => {
+        ariane.innerHTML = '/ ';
+        var tmpPath = '/';
+        for (var elem of currentPath.split('/').slice(0, -1)) {
+          if (elem != "") {
+            tmpPath += elem + '/';
+            ariane.innerHTML += '<span onclick="changeCurrentTree(\''+tmpPath+'\')">' + elem + '</span> / ';
+          }
+        }
+      }
+      updateTreeView = (root = jsonTree, rootDom = tree, path = '/') => {
+        if (root == jsonTree) {
+          rootDom.innerHTML = '';
+          var dir = document.createElement('span');
+          dir.onclick = function() {changeCurrentTree('/', this);};
+          dir.innerHTML = 'ROOT('+Object.keys(jsonTree.unclassified).length+')';
+          rootDom.appendChild(dir);
+        }
+        var ul = document.createElement('ul');
+        for (var key in root) {
+          if (key == 'unclassified')
+            continue;
+          var li = document.createElement('li');
+          var dir = document.createElement('span');
+          dir.path = path+key+'/';
+          dir.onclick = function() {changeCurrentTree(this.path, this);};
+          dir.innerHTML = key+'('+Object.keys(root[key].unclassified).length+')';
+          li.appendChild(dir);
+          updateTreeView(root[key], li, path+key+'/');
+          ul.appendChild(li);
+        }
+        rootDom.appendChild(ul);
+      }
+      movePuzzle = (puzzle, path) => {
+        var root = jsonTree;
+        for (elem of path.split('/').slice(1)) {
+          if (elem == "") {
+            root.unclassified[puzzle.id] = puzzle;
+            return;
+          }
+          else
+            root = root[elem];
+        }
+      }
+      updatePuzzleList = () => {
+        data.innerHTML = '';
+        for (puzzleId in currentTree.unclassified) {
+          var puzzle = currentTree.unclassified[puzzleId];
+          var img = document.createElement('img');
+          img.src = puzzle.img;
+          img.style = 'width: 100px; cursor: pointer;';
+          img.puzzleId = puzzleId;
+          img.puzzle = puzzle;
+          img.onmouseover = function() {
+            var container = document.getElementById('currentPuzzleName');
+            container.innerHTML = this.puzzle.name;
+          }
+          img.onclick = function() {
+            if (currentPath != selectedPath) {
+              movePuzzle(this.puzzle, selectedPath);
+              delete currentTree.unclassified[this.puzzleId];
+              updatePuzzleList();
+              updateDB();
+            }
+          }
+          data.appendChild(img);
+        }
+        updateTreeView();
       }
       updatePage = (curReq, storeId, totalPage) => {
         if (curReq.readyState == 4 && curReq.status == 200) {
@@ -50,62 +156,33 @@
           }
           else {
             var pagePuzzles = curReq.responseText;
-            if (pagePuzzles == 'lol')
-              console.log(storeId);
-            else {
-              newPuzzles = JSON.parse(curReq.responseText);
-              var brands = ['calvin\'s', 'cong\'s', 'congs', 'cube4you', 'cubetwist', 'crazybad', 'cyclone', 'cycloneboys', 'dayan', 'diansheng', 'eastsheen', 'evgeniy', 'fangcun', 'fangshi', 'fangshi(funs)', 'fanxin', 'fisher', 'gan', 'gans', 'ganspuzzle', 'guoguan', 'hellocube', 'heshu', 'kungfu', 'lanlan', 'limcube', 'lingao', 'maru', 'meffert\'s', 'mf8', 'mofang', 'mofangge', 'mohuan', 'mojue', 'moyu', 'mozhi', 'ninja', 'pitcher', 'pochmann\'s', 'qiyi', 'qj', 'rubik', 'rubik\'s', 'senhuan', 'shengshou', 'supersede', 'smaz', 'timur', 'tomz', 'traiphum', 'type', 'type_c', 'v-cube', 'verypuzzle', 'verrypuzzle', 'witeden', 'x-man', 'yancheng', 'yongjun', 'yuxin', 'yj', 'z', 'z-cube', 'zcube'];
-
-              var sizes = ['2x2', '3x3', '3x3x3', '4x4', '5x5', '6x6', '7x7', '1x3x3', '2x2x3', 'pyraminx', 'megaminx', 'gigaminx', 'kilominx', 'pyramorphix', 'skewb', 'square-1'];
-              for (newPuzzle of newPuzzles) {
-                var newPuzzleWords = newPuzzle.name.toLowerCase().split(' ')
-                var brand = newPuzzleWords.find(w => brands.indexOf(w) != -1);
-                newPuzzleWords = newPuzzleWords.filter(v => v !== brand);
-                if (brand == 'gan' || brand == 'gans')
-                  brand = 'ganspuzzle';
-                if (brand == 'z' || brand == 'zcube')
-                  brand = 'z-cube';
-                if (brand == 'verrypuzzle')
-                  brand = 'verypuzzle';
-                if (brand == 'yj')
-                  brand = 'yongjun';
-                if (brand == 'rubik')
-                  brand = 'rubik\'s';
-                if (brand == 'congs')
-                  brand = 'cong\'s';
-                if (brand == 'mofangge')
-                  brand = 'qiyi';
-                if (brand == 'fangshi(funs)')
-                  brand = 'fangshi';
-                if (brand == 'type')
-                  brand = 'type_c';
-		if (brand == 'cyclone')
-		  brand = 'cycloneboys';
-                if (!brand) {
-                  brand = '_other';
-                  if (newPuzzle.store == 'championscubestoree')
-                    console.log(newPuzzleWords, newPuzzle);
-                }
-                if (!(brand in puzzleList))
-                  puzzleList[brand] = {};
-                var size = newPuzzleWords.find(w => sizes.indexOf(w) != -1);
-                if (!size)
-                  ;//console.log(newPuzzleWords, newPuzzle);
-                if (!size)
-                  size = '_other';
-                if (size == '3x3')
-                  size = '3x3x3'
-                if (!(size in puzzleList[brand]))
-                  puzzleList[brand][size] = [];
-                puzzleList[brand][size].push(newPuzzle);
-              }
-//              console.log(puzzleList)
-//              updatePuzzleList();
-            }
+            newPuzzles = JSON.parse(curReq.responseText);
+            for (newPuzzle of newPuzzles)
+              movePuzzle(newPuzzle, newPuzzle.path);
+            updatePuzzleList();
             pageCounter[storeId] += 1;
+            updateDB();
           }
           document.getElementById(storeId).innerHTML = 'page '+pageCounter[storeId]+' sur ' + totalPage;
         }
+      }
+      createSave(root = jsonTree) => {
+        var jsonSave = {'unclassified': {}};
+	      for (var puzzle in root['unclassified'])
+          jsonSave['unclassified'][puzzle] = 1
+        for (var key in root) {
+	        if (key != 'unclassified')
+            jsonSave[key] = createSave(root[key]);
+	      }
+        return jsonSave;
+      }
+      updateDB = () => {
+        var url = "save.php";
+        var req = new XMLHttpRequest();
+        req.open("POST", "save.php", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	var jsonSave = createSave();
+        req.send('db='+JSON.stringify(jsonSave));
       }
       sendReq = (storeId, page = 0, totalPage = 0) => {
         var url = "fetch.php?site="+storeId;
@@ -118,11 +195,11 @@
       }
 //      sendReq('hknowstore');
 //      sendReq('championscubestore');
-//      sendReq('cubezz');
+//        sendReq('cubezz');
 //      sendReq('cube4you');
-     sendReq('zcube');
-//      sendReq('cancube');
-//      sendReq('cubingoutloud');
+//        sendReq('zcube');
+      sendReq('cancube');
+      sendReq('cubingoutloud');
 //      sendReq('speedcubescanada');
     </script>
   </body>

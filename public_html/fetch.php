@@ -1,6 +1,18 @@
 <?php
+function searchTree($productId, $jsonTree, $path = '/') {
+  if (array_key_exists($productId, $jsonTree['unclassified']))
+    return $path;
+  foreach ($jsonTree as $key => $value) {
+    if ($key != 'unclassified') {
+      $newPath = searchTree($productId, $value, $path.$key.'/');
+      if ($newPath != '/')
+        return $newPath;
+    }
+  }
+  return '/';
+}
 
-function cancube($dom, $page = 0) {
+function cancube($jsonTree, $dom, $page = 0) {
   $url = "https://cancube.ca/collections/all?sort_by=price-descending";
   if ($page != 0)
     $url .= "&page=".$page;
@@ -14,19 +26,22 @@ function cancube($dom, $page = 0) {
     echo $lastPage;
   }
   else {
-    $products = $xpath->query("//*[contains(@class, 'product-card__info')]");
+    $products = $xpath->query("//*[contains(@class, 'grid__item small--one-half medium-up--one-fifth')]");
     $puzzles = [];
     foreach ($products as $product) {
+      $productImg = $product->getElementsByTagName('img')[0]->getAttribute('src');
       $productName = $xpath->query(".//*[contains(@class, 'product-card__name')]", $product)[0]->nodeValue;
       $productPrice = $xpath->query(".//*[contains(@class, 'product-card__price')]", $product)[0];
       $productPrice = floatval(substr($xpath->query(".//*[contains(@class, 'money')]", $productPrice)[0]->nodeValue, 1));
-      $puzzles[] = array('name' => $productName, 'price' => $productPrice, 'currency' => 'CAD', 'store' => 'cancube');
+      $productId = 'cancube-' . implode('-', explode(' ', strtolower($productName)));
+      $productPath = searchTree($productId, $jsonTree);
+      $puzzles[] = array('id' => $productId, 'path' => $productPath, 'img' => $productImg, 'name' => $productName, 'price' => $productPrice, 'currency' => 'CAD', 'store' => 'cancube');
     }
     echo json_encode($puzzles);
   }
 }
 
-function cubingoutloud($dom, $page = 0) {
+function cubingoutloud($jsonTree, $dom, $page = 0) {
   $url = 'https://www.cubingoutloud.com/collections/all?sort_by=price-descending';
   if ($page != 0)
     $url .= "&page=".$page;
@@ -43,11 +58,14 @@ function cubingoutloud($dom, $page = 0) {
     $products = $xpath->query("//*[contains(@class, 'grid-link-thumbnail')]");
     $puzzles = [];
     foreach ($products as $product) {
+      $productImg = $product->getElementsByTagName('img')[0]->getAttribute('src');
       $productName = $xpath->query(".//*[contains(@class, 'grid-link__title')]", $product)[0]->nodeValue;
       $productName = preg_replace('/[^a-z0-9\-\' ]/i', '', $productName);
       $productPrice = $xpath->query(".//*[contains(@class, 'grid-link__meta')]", $product)[0];
       $productPrice = floatval(substr($product->getElementsByTagName('strong')[0]->nodeValue, 1));
-      $puzzles[] = array('name' => $productName, 'price' => $productPrice, 'currency' => 'CAD', 'store' => 'cubingoutloud');
+      $productId = 'cubingoutloud-' . implode('-', explode(' ', strtolower($productName)));
+      $productPath = searchTree($productId, $jsonTree);
+      $puzzles[] = array('id' => $productId, 'path' => $productPath, 'img' => $productImg, 'name' => $productName, 'price' => $productPrice, 'currency' => 'CAD', 'store' => 'cubingoutloud');
     }
     echo json_encode($puzzles);
   }
@@ -184,10 +202,11 @@ function cube4you($dom, $page = 0) {
     $puzzles = [];
     $products = $xpath->query("//*[contains(@class, 'table-product-attributes')]");
     foreach ($products as $product) {
+      $productImg = 'http://cube4you.com/'.$product->getElementsByTagName('img')[0]->getAttribute('src');
       $productName = $product->getElementsByTagName('strong')[0]->nodeValue;
       $productPrice = $xpath->query(".//*[contains(@class, 'table-price')]", $product)[0]->nodeValue;
       $productPrice = floatval(substr($productPrice, 1));
-      $puzzles[] = array('name' => $productName, 'price' => $productPrice, 'currency' => 'USD', 'store' => 'championscubestore');
+      $puzzles[] = array('img' => $productImg, 'name' => $productName, 'price' => $productPrice, 'currency' => 'USD', 'store' => 'cube4you');
     }
     echo json_encode($puzzles);
   }
@@ -211,10 +230,11 @@ function zcube($dom, $page = 0) {
     $content = $dom->getElementById('content');
     $products = $xpath->query(".//*[contains(@class, 'col-sm-4')]", $content);
     foreach ($products as $product) {
+      $productImg = $product->getElementsByTagName('img')[0]->getAttribute('src');
       $productName = $product->getElementsByTagName('h4')[0]->nodeValue;
       $productPrice = $xpath->query(".//*[contains(@class, 'price-new')]", $product)[0]->nodeValue;
       $productPrice = floatval(substr($productPrice, 2));
-      $puzzles[] = array('name' => $productName, 'price' => $productPrice, 'currency' => 'USD', 'store' => 'championscubestore');
+      $puzzles[] = array('img' => $productImg, 'name' => $productName, 'price' => $productPrice, 'currency' => 'USD', 'store' => 'zcube');
     }
     echo json_encode($puzzles);
   }
@@ -224,9 +244,10 @@ ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
 libxml_use_internal_errors(true);
 $dom = new DOMDocument;
 $dom->preserveWhiteSpace = false;
+$jsonTree = json_decode(file_get_contents('db.js', false, NULL, 15), true);
 $page = isset($_GET['page']) ? intval($_GET['page']) : 0;
 if (isset($_GET['site'])) {
-  $_GET['site']($dom, $page);
+  $_GET['site']($jsonTree, $dom, $page);
 }
 
 ?>
