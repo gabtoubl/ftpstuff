@@ -166,7 +166,7 @@
           document.getElementById(storeId).innerHTML = 'page '+pageCounter[storeId]+' sur ' + totalPage;
         }
       }
-      createSave(root = jsonTree) => {
+      createSave = (root = jsonTree) => {
         var jsonSave = {'unclassified': {}};
 	      for (var puzzle in root['unclassified'])
           jsonSave['unclassified'][puzzle] = 1
